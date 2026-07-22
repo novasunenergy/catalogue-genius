@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
 import logo from "@/assets/logo.png";
-import { LogIn, LayoutDashboard } from "lucide-react";
+import { LogIn, LayoutDashboard, ClipboardList } from "lucide-react";
 
 export function SiteHeader() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSales, setIsSales] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
@@ -17,7 +18,12 @@ export function SiteHeader() {
       setSignedIn(!!data.session);
       if (data.session) {
         const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", data.session.user.id);
-        if (mounted) setIsAdmin(!!roles?.some((r) => r.role === "admin"));
+        if (!mounted) return;
+        setIsAdmin(!!roles?.some((r) => r.role === "admin"));
+        setIsSales(!!roles?.some((r) => r.role === "salesperson"));
+      } else {
+        setIsAdmin(false);
+        setIsSales(false);
       }
     };
     check();
@@ -41,9 +47,14 @@ export function SiteHeader() {
             <LayoutDashboard className="h-4 w-4" /> <span className="hidden sm:inline">Admin</span>
           </Link>
         )}
+        {(isSales || isAdmin) && (
+          <Link to="/sales" className="flex items-center gap-1.5 rounded-md bg-header-accent px-3 py-1.5 text-sm font-medium hover:bg-header-accent/80">
+            <ClipboardList className="h-4 w-4" /> <span className="hidden sm:inline">Sales</span>
+          </Link>
+        )}
         {!signedIn && (
           <Link to="/auth" className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm hover:bg-header-accent">
-            <LogIn className="h-4 w-4" /> <span className="hidden sm:inline">Sign in</span>
+            <LogIn className="h-4 w-4" /> <span className="hidden sm:inline">Staff sign in</span>
           </Link>
         )}
       </div>
