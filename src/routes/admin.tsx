@@ -53,6 +53,11 @@ function AdminPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [importing, setImporting] = useState(false);
   const xlsxRef = useRef<HTMLInputElement>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [orderMonth, setOrderMonth] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  });
 
   useEffect(() => {
     (async () => {
@@ -80,6 +85,54 @@ function AdminPage() {
     setCategories(c.data?.map((r) => r.name) ?? []);
     setBrands(b.data?.map((r) => r.name) ?? []);
   };
+
+  useEffect(() => {
+    if (!authorized) return;
+    (async () => {
+      const [y, m] = orderMonth.split("-").map(Number);
+      const start = new Date(y, m - 1, 1).toISOString();
+      const end = new Date(y, m, 1).toISOString();
+      const { data } = await supabase
+        .from("orders")
+        .select("*")
+        .gte("created_at", start)
+        .lt("created_at", end)
+        .order("created_at", { ascending: false });
+      setOrders((data as Order[]) ?? []);
+    })();
+  }, [authorized, orderMonth]);
+
+  const exportOrdersCsv = () => {
+    if (!orders.length) { toast.error("No orders in this month"); return; }
+    const cols = [
+      "Date", "Salesperson", "Customer", "Product Code", "Product Name",
+      "Brand", "Category", "Size", "Finish", "Price", "Quantity", "Unit",
+    ];
+    const rows = orders.map((o) => [
+      new Date(o.created_at).toLocaleString("en-IN"),
+      o.salesperson_name, o.customer_name, o.product_code, o.product_name,
+      o.brand ?? "", o.category ?? "", o.size ?? "", o.finish ?? "",
+      String(o.price), String(o.quantity), o.unit,
+    ]);
+    const csv = [cols, ...rows]
+      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders-${orderMonth}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const shopUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/`;
+  }, []);
+  const qrSrc = shopUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=8&data=${encodeURIComponent(shopUrl)}`
+    : "";
 
   const signOut = async () => {
     await supabase.auth.signOut();
