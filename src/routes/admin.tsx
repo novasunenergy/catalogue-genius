@@ -1,14 +1,30 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { LogOut, Trash2, Upload, Plus, Save, X, ImageIcon, FileSpreadsheet } from "lucide-react";
+import { LogOut, Trash2, Upload, Plus, Save, X, ImageIcon, FileSpreadsheet, QrCode, Download } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
+
+type Order = {
+  id: string;
+  salesperson_name: string;
+  customer_name: string;
+  product_code: string;
+  product_name: string;
+  brand: string | null;
+  category: string | null;
+  size: string | null;
+  finish: string | null;
+  price: number;
+  quantity: number;
+  unit: string;
+  created_at: string;
+};
 
 type Product = {
   id: string;
