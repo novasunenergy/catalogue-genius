@@ -308,7 +308,79 @@ function AdminPage() {
             {filtered.length > 200 && <div className="p-3 text-center text-xs text-muted-foreground">Showing first 200. Use search to narrow.</div>}
           </div>
         </div>
+
+        {/* Orders */}
+        <div className="rounded-lg border bg-card">
+          <div className="flex flex-wrap items-center gap-2 border-b px-4 py-3">
+            <div className="font-semibold">Orders ({orders.length})</div>
+            <div className="flex-1" />
+            <label className="text-xs text-muted-foreground">Month</label>
+            <input type="month" value={orderMonth} onChange={(e) => setOrderMonth(e.target.value)} className="rounded border px-2 py-1 text-sm" />
+            <button onClick={exportOrdersCsv} className="flex items-center gap-1 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">
+              <Download className="h-4 w-4" /> Export CSV
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-muted text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">Salesperson</th>
+                  <th className="px-3 py-2 text-left">Customer</th>
+                  <th className="px-3 py-2 text-left">Code</th>
+                  <th className="px-3 py-2 text-left">Product</th>
+                  <th className="px-3 py-2 text-left">Brand</th>
+                  <th className="px-3 py-2 text-left">Size</th>
+                  <th className="px-3 py-2 text-left">Finish</th>
+                  <th className="px-3 py-2 text-right">Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => (
+                  <tr key={o.id} className="border-t hover:bg-muted/50">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs">{new Date(o.created_at).toLocaleString("en-IN")}</td>
+                    <td className="px-3 py-2">{o.salesperson_name}</td>
+                    <td className="px-3 py-2">{o.customer_name}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{o.product_code}</td>
+                    <td className="px-3 py-2">{o.product_name}</td>
+                    <td className="px-3 py-2">{o.brand}</td>
+                    <td className="px-3 py-2">{o.size}</td>
+                    <td className="px-3 py-2">{o.finish}</td>
+                    <td className="px-3 py-2 text-right">{o.quantity} {o.unit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {orders.length === 0 && <div className="p-6 text-center text-sm text-muted-foreground">No orders this month.</div>}
+          </div>
+        </div>
+
+        {/* QR Code for shop link */}
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-sm mb-2 flex items-center gap-1">
+            <QrCode className="h-4 w-4 text-primary" /> Shop QR Code
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Print this QR code — anyone who scans it opens the shop catalogue directly. Share the link below on WhatsApp or social media.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {qrSrc && <img src={qrSrc} alt="Shop QR code" width={280} height={280} className="rounded border bg-white p-2" />}
+            <div className="flex-1 w-full space-y-2">
+              <div className="text-xs text-muted-foreground">Shop link</div>
+              <input readOnly value={shopUrl} className="w-full rounded border bg-background px-2 py-1.5 text-sm" onFocus={(e) => e.currentTarget.select()} />
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => { navigator.clipboard.writeText(shopUrl); toast.success("Link copied"); }} className="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground">Copy link</button>
+                {qrSrc && <a href={qrSrc} download="shop-qr-code.png" className="rounded border px-3 py-1.5 text-xs hover:bg-muted">Download QR</a>}
+                <Link to="/sales" className="rounded border px-3 py-1.5 text-xs hover:bg-muted">Open Sales panel</Link>
+              </div>
+              <p className="text-[11px] text-muted-foreground pt-2">
+                Note: always share the shop link above with customers — not the admin/auth pages.
+              </p>
+            </div>
+          </div>
+        </div>
       </main>
+
 
       {editing && <ProductEditor initial={editing} categories={categories} brands={brands} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}
     </div>
