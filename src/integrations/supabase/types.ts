@@ -50,6 +50,68 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          brand: string | null
+          category: string | null
+          created_at: string
+          customer_name: string
+          finish: string | null
+          id: string
+          price: number
+          product_code: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          salesperson_id: string | null
+          salesperson_name: string
+          size: string | null
+          unit: string
+        }
+        Insert: {
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          customer_name: string
+          finish?: string | null
+          id?: string
+          price?: number
+          product_code: string
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          salesperson_id?: string | null
+          salesperson_name: string
+          size?: string | null
+          unit?: string
+        }
+        Update: {
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          customer_name?: string
+          finish?: string | null
+          id?: string
+          price?: number
+          product_code?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          salesperson_id?: string | null
+          salesperson_name?: string
+          size?: string | null
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           brand: string | null
@@ -124,6 +186,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_signup_role: {
+        Args: { _requested: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
