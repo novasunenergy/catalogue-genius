@@ -30,16 +30,21 @@ function CataloguePage() {
   const [brands, setBrands] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [newCategories, setNewCategories] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [c, b] = await Promise.all([
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const [c, b, n] = await Promise.all([
         supabase.from("categories").select("name").order("name"),
         supabase.from("brands").select("name").order("name"),
+        supabase.from("products").select("category").eq("is_active", true).gte("created_at", since),
       ]);
       setCategories(c.data?.map((r) => r.name) ?? []);
       setBrands(b.data?.map((r) => r.name) ?? []);
+      const cats = Array.from(new Set((n.data ?? []).map((r) => r.category).filter((x): x is string => !!x)));
+      setNewCategories(cats);
     })();
   }, []);
 
@@ -96,6 +101,15 @@ function CataloguePage() {
       </div>
 
       <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
+        {newCategories.length > 0 && (
+          <div className="mb-4 space-y-1">
+            {newCategories.map((cat) => (
+              <div key={cat} className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                🆕 New Product is added for "{cat}"
+              </div>
+            ))}
+          </div>
+        )}
         <div className="mb-3 text-sm text-muted-foreground">
           {loading ? "Searching..." : `${products.length} product${products.length === 1 ? "" : "s"}`}
         </div>

@@ -269,8 +269,12 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
       const path = `${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
       if (error) throw error;
-      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
-      setForm((f) => ({ ...f, image_url: data.publicUrl }));
+      // Bucket is private (public buckets are blocked by workspace policy), so use a long-lived signed URL
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("product-images")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10); // 10 years
+      if (signErr || !signed) throw signErr ?? new Error("Failed to create signed URL");
+      setForm((f) => ({ ...f, image_url: signed.signedUrl }));
       toast.success("Image uploaded");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
