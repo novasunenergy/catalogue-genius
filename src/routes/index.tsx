@@ -101,6 +101,15 @@ function CataloguePage() {
       </div>
 
       <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
+        {newCategories.length > 0 && (
+          <div className="mb-4 space-y-1">
+            {newCategories.map((cat) => (
+              <div key={cat} className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                🆕 New Product is added for "{cat}"
+              </div>
+            ))}
+          </div>
+        )}
         <div className="mb-3 text-sm text-muted-foreground">
           {loading ? "Searching..." : `${products.length} product${products.length === 1 ? "" : "s"}`}
         </div>
