@@ -30,16 +30,21 @@ function CataloguePage() {
   const [brands, setBrands] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [newCategories, setNewCategories] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [c, b] = await Promise.all([
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const [c, b, n] = await Promise.all([
         supabase.from("categories").select("name").order("name"),
         supabase.from("brands").select("name").order("name"),
+        supabase.from("products").select("category").eq("is_active", true).gte("created_at", since),
       ]);
       setCategories(c.data?.map((r) => r.name) ?? []);
       setBrands(b.data?.map((r) => r.name) ?? []);
+      const cats = Array.from(new Set((n.data ?? []).map((r) => r.category).filter((x): x is string => !!x)));
+      setNewCategories(cats);
     })();
   }, []);
 
