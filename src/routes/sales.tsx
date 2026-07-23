@@ -176,9 +176,12 @@ function SalesPage() {
   );
 }
 
+type Variant = { size: string; finish: string; qty: number; unit: "Nos" | "Box" };
+
 function OrderCard({ product, customerName, salespersonName }: { product: Product; customerName: string; salespersonName: string }) {
-  const [qty, setQty] = useState(1);
-  const [unit, setUnit] = useState<"Nos" | "Box">("Nos");
+  const [variants, setVariants] = useState<Variant[]>([
+    { size: product.size ?? "", finish: product.finish ?? "", qty: 1, unit: "Nos" },
+  ]);
   const [sending, setSending] = useState(false);
 
   const priceStr = useMemo(
@@ -186,14 +189,22 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
     [product.price]
   );
 
+  const updateVariant = (i: number, patch: Partial<Variant>) => {
+    setVariants((prev) => prev.map((v, idx) => (idx === i ? { ...v, ...patch } : v)));
+  };
+  const addVariant = () => setVariants((prev) => [...prev, { size: "", finish: "", qty: 1, unit: "Nos" }]);
+  const removeVariant = (i: number) => setVariants((prev) => prev.filter((_, idx) => idx !== i));
+
   const sendOrder = async () => {
     if (!customerName.trim()) { toast.error("Enter customer name at top first"); return; }
+    const validVariants = variants.filter((v) => v.qty > 0);
+    if (validVariants.length === 0) { toast.error("Add at least one row with quantity"); return; }
     setSending(true);
     try {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) throw new Error("Not signed in");
-      const { error } = await supabase.from("orders").insert({
-        salesperson_id: sess.session.user.id,
+      const rows = validVariants.map((v) => ({
+        salesperson_id: sess.session!.user.id,
         salesperson_name: salespersonName,
         customer_name: customerName.trim(),
         product_id: product.id,
@@ -201,13 +212,25 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
         product_name: product.name,
         brand: product.brand,
         category: product.category,
-        size: product.size,
-        finish: product.finish,
+        size: v.size || null,
+        finish: v.finish || null,
         price: product.price,
-        quantity: qty,
-        unit,
-      });
+        quantity: v.qty,
+        unit: v.unit,
+      }));
+      const { error } = await supabase.from("orders").insert(rows);
       if (error) throw error;
+
+      const lines = validVariants
+        .map((v, i) => {
+          const parts = [
+            `${i + 1}) Qty: ${v.qty} ${v.unit}`,
+            v.size ? `Size: ${v.size}` : null,
+            v.finish ? `Finish: ${v.finish}` : null,
+          ].filter(Boolean);
+          return parts.join(" | ");
+        })
+        .join("\n");
 
       const msg =
         `Hello, New Order From "${salespersonName}"\n\n` +
@@ -215,7 +238,7 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
         `Product Code: ${product.code}\n\n` +
         `Product Name: ${product.name}\n\n` +
         `Brand: ${product.brand ?? "-"}\n\n` +
-        `Quantity: ${qty} ${unit}`;
+        `Items:\n${lines}`;
       const href = `https://wa.me/${SHOP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
       window.open(href, "_blank", "noopener,noreferrer");
       toast.success("Order recorded");
@@ -239,22 +262,58 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
         <div className="text-[11px] uppercase tracking-wide text-muted-foreground truncate">{product.brand ?? " "}</div>
         <div className="text-sm font-medium leading-snug line-clamp-2 min-h-[2.5rem]">{product.name}</div>
         <div className="text-[11px] text-muted-foreground">Code: {product.code}</div>
-        {(product.size || product.finish) && (
-          <div className="text-[11px] text-muted-foreground truncate">
-            {[product.size && `Size: ${product.size}`, product.finish && `Finish: ${product.finish}`].filter(Boolean).join(" · ")}
-          </div>
-        )}
       </div>
       <div className="mt-2 text-lg font-bold text-price">{priceStr}</div>
-      <div className="mt-2 flex items-center gap-1">
-        <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="rounded border p-1 hover:bg-muted"><Minus className="h-3.5 w-3.5" /></button>
-        <input type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} className="w-full rounded border px-2 py-1 text-center text-sm" />
-        <button onClick={() => setQty((q) => q + 1)} className="rounded border p-1 hover:bg-muted"><Plus className="h-3.5 w-3.5" /></button>
+
+      <div className="mt-2 space-y-2">
+        {variants.map((v, i) => (
+          <div key={i} className="rounded border bg-muted/30 p-1.5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] font-semibold text-muted-foreground">
+              <span>Variant {i + 1}</span>
+              {variants.length > 1 && (
+                <button onClick={() => removeVariant(i)} className="text-destructive hover:underline">Remove</button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-1">
+              <input
+                value={v.size}
+                onChange={(e) => updateVariant(i, { size: e.target.value })}
+                placeholder="Size"
+                className="rounded border px-1.5 py-1 text-xs"
+              />
+              <input
+                value={v.finish}
+                onChange={(e) => updateVariant(i, { finish: e.target.value })}
+                placeholder="Finish"
+                className="rounded border px-1.5 py-1 text-xs"
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => updateVariant(i, { qty: Math.max(1, v.qty - 1) })} className="rounded border p-1 hover:bg-muted"><Minus className="h-3 w-3" /></button>
+              <input
+                type="number"
+                min={1}
+                value={v.qty}
+                onChange={(e) => updateVariant(i, { qty: Math.max(1, Number(e.target.value) || 1) })}
+                className="w-full rounded border px-1.5 py-1 text-center text-xs"
+              />
+              <button onClick={() => updateVariant(i, { qty: v.qty + 1 })} className="rounded border p-1 hover:bg-muted"><Plus className="h-3 w-3" /></button>
+              <select
+                value={v.unit}
+                onChange={(e) => updateVariant(i, { unit: e.target.value as "Nos" | "Box" })}
+                className="rounded border px-1 py-1 text-xs"
+              >
+                <option value="Nos">Nos</option>
+                <option value="Box">Box</option>
+              </select>
+            </div>
+          </div>
+        ))}
+        <button onClick={addVariant} className="w-full rounded border border-dashed py-1 text-xs text-primary hover:bg-primary/5">
+          + Add size / finish
+        </button>
       </div>
-      <select value={unit} onChange={(e) => setUnit(e.target.value as "Nos" | "Box")} className="mt-1 rounded border px-2 py-1 text-sm">
-        <option value="Nos">Nos</option>
-        <option value="Box">Box</option>
-      </select>
+
       <button
         onClick={sendOrder}
         disabled={sending}
