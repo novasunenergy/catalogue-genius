@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
+import { claimSignupRole } from "@/lib/claim-role.functions";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
