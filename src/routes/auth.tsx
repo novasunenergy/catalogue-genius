@@ -121,6 +121,17 @@ function AuthPage() {
             {mode === "signup" ? `Create ${role === "admin" ? "admin" : "staff"} account` : SHOP_CONFIG.name}
           </p>
         </div>
+        {existingSession && (
+          <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
+            You are signed in as <strong>{existingSession.email}</strong>
+            {existingSession.roles.length > 0 && <> ({existingSession.roles.join(", ")})</>}.
+            To log in as {selectedRole === "admin" ? "an admin" : "staff"} with another account, sign out first.
+            <button type="button" onClick={signOutHere}
+              className="mt-2 w-full rounded-md bg-amber-600 py-1.5 text-xs font-semibold text-white hover:bg-amber-700">
+              Sign out
+            </button>
+          </div>
+        )}
         <form onSubmit={submit} className="space-y-3">
           {mode === "signup" && (
             <>
