@@ -65,9 +65,8 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        // Self-assign requested role
-        const { error: rpcErr } = await supabase.rpc("claim_signup_role", { _requested: role });
-        if (rpcErr) throw rpcErr;
+        // Self-assign requested role via server function (admin-side)
+        await claimSignupRole({ data: { requested: role } });
         toast.success("Account created.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
