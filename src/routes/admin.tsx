@@ -7,6 +7,16 @@ import * as XLSX from "xlsx";
 import { LogOut, Trash2, Upload, Plus, Save, X, ImageIcon, FileSpreadsheet, QrCode, Download } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
+  head: () => ({
+    meta: [
+      { title: "Admin Panel — Mayur Hardware" },
+      { name: "description", content: "Mayur Hardware admin panel for managing products, brands, categories, images, QR code, and monthly orders." },
+      { property: "og:title", content: "Admin Panel — Mayur Hardware" },
+      { property: "og:description", content: "Mayur Hardware admin panel for managing products, brands, categories, images, QR code, and monthly orders." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminPage,
 });
 
@@ -62,7 +72,7 @@ function AdminPage() {
   useEffect(() => {
     (async () => {
       const { data: sess } = await supabase.auth.getSession();
-      if (!sess.session) { navigate({ to: "/auth" }); return; }
+      if (!sess.session) { navigate({ to: "/auth", search: { role: "admin" } }); return; }
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", sess.session.user.id);
       if (!roles?.some((r) => r.role === "admin")) {
         toast.error("Admin access required");
