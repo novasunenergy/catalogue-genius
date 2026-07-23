@@ -1,11 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Search, MessageCircle, Minus, Plus, ImageOff } from "lucide-react";
+import { Search, MessageCircle, Minus, Plus, ImageOff, ShieldCheck, ClipboardList } from "lucide-react";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Mayur Hardware Catalogue" },
+      { name: "description", content: "Browse Mayur Hardware products by name, code, brand, or category and enquire instantly on WhatsApp." },
+      { property: "og:title", content: "Mayur Hardware Catalogue" },
+      { property: "og:description", content: "Browse Mayur Hardware products by name, code, brand, or category and enquire instantly on WhatsApp." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: CataloguePage,
 });
 
@@ -69,6 +79,31 @@ function CataloguePage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
+
+      <section className="border-b bg-card">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:px-4">
+          <div className="flex-1">
+            <h1 className="text-base font-bold text-foreground sm:text-lg">Mayur Hardware Product Catalogue</h1>
+            <p className="text-xs text-muted-foreground sm:text-sm">Customers can browse products below. Team members can sign in here.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
+            <Link
+              to="/auth"
+              search={{ role: "admin" }}
+              className="flex items-center justify-center gap-1.5 rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              <ShieldCheck className="h-4 w-4" /> Admin Login
+            </Link>
+            <Link
+              to="/auth"
+              search={{ role: "salesperson" }}
+              className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+            >
+              <ClipboardList className="h-4 w-4" /> Staff Login
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Search bar row */}
       <div className="bg-header-accent">

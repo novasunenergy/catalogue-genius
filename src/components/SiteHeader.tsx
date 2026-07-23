@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
 import logo from "@/assets/logo.png";
-import { LogIn, LayoutDashboard, ClipboardList } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, ClipboardList } from "lucide-react";
 
 export function SiteHeader() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -53,8 +53,13 @@ export function SiteHeader() {
           </Link>
         )}
         {!signedIn && (
-          <Link to="/auth" className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm hover:bg-header-accent">
-            <LogIn className="h-4 w-4" /> <span className="hidden sm:inline">Staff sign in</span>
+          <Link to="/auth" search={{ role: "admin" }} className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm hover:bg-header-accent">
+            <ShieldCheck className="h-4 w-4" /> <span className="hidden sm:inline">Admin</span>
+          </Link>
+        )}
+        {!signedIn && (
+          <Link to="/auth" search={{ role: "salesperson" }} className="flex items-center gap-1.5 rounded-md bg-header-accent px-3 py-1.5 text-sm font-medium hover:bg-header-accent/80">
+            <ClipboardList className="h-4 w-4" /> <span className="hidden sm:inline">Staff</span>
           </Link>
         )}
       </div>

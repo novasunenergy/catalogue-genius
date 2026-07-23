@@ -6,6 +6,19 @@ import logo from "@/assets/logo.png";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    role: search.role === "admin" || search.role === "salesperson" ? search.role : undefined,
+  }),
+  head: () => ({
+    meta: [
+      { title: "Team Login — Mayur Hardware" },
+      { name: "description", content: "Admin and staff sign-in for Mayur Hardware catalogue management and order entry." },
+      { property: "og:title", content: "Team Login — Mayur Hardware" },
+      { property: "og:description", content: "Admin and staff sign-in for Mayur Hardware catalogue management and order entry." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AuthPage,
 });
 
@@ -26,8 +39,10 @@ async function routeByRole(navigate: ReturnType<typeof useNavigate>) {
 
 function AuthPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const selectedRole = search.role ?? "salesperson";
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [role, setRole] = useState<Role>("salesperson");
+  const [role, setRole] = useState<Role>(selectedRole);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,20 +87,20 @@ function AuthPage() {
       <div className="w-full max-w-sm rounded-lg bg-card border shadow-lg p-6">
         <div className="flex flex-col items-center gap-2 mb-4">
           <img src={logo} alt={SHOP_CONFIG.name} width={64} height={64} className="h-16 w-16" />
-          <h1 className="text-xl font-bold">{SHOP_CONFIG.name}</h1>
+          <h1 className="text-xl font-bold">{selectedRole === "admin" ? "Admin Login" : "Staff Login"}</h1>
           <p className="text-sm text-muted-foreground">
-            {mode === "signup" ? "Create account" : "Sign in"}
+            {mode === "signup" ? `Create ${role === "admin" ? "admin" : "staff"} account` : SHOP_CONFIG.name}
           </p>
         </div>
         <form onSubmit={submit} className="space-y-3">
           {mode === "signup" && (
             <>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">I am a</label>
+                <label className="text-xs font-medium text-muted-foreground">Account type</label>
                 <div className="mt-1 grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => setRole("salesperson")}
                     className={`rounded-md border py-2 text-sm ${role === "salesperson" ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`}>
-                    Salesperson
+                    Staff
                   </button>
                   <button type="button" onClick={() => setRole("admin")}
                     className={`rounded-md border py-2 text-sm ${role === "admin" ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`}>
@@ -122,7 +137,7 @@ function AuthPage() {
           )}
         </div>
         <div className="mt-3 text-center text-[10px] text-muted-foreground">
-          Customers do not need to sign in — they can browse the catalogue at the shop link directly.
+          Customers do not need to sign in — the product catalogue opens directly from the QR code or share link.
         </div>
       </div>
     </div>
