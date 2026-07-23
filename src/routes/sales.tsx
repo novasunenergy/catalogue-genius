@@ -93,7 +93,7 @@ function SalesPage() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate({ to: "/auth", search: { role: "salesperson" } });
+    navigate({ to: "/" });
   };
 
   if (loading || !authorized) {
