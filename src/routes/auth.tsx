@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
+import { claimSignupRole } from "@/lib/claim-role.functions";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -65,9 +66,8 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        // Self-assign requested role
-        const { error: rpcErr } = await supabase.rpc("claim_signup_role", { _requested: role });
-        if (rpcErr) throw rpcErr;
+        // Self-assign requested role via server function (admin-side)
+        await claimSignupRole({ data: { requested: role } });
         toast.success("Account created.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
