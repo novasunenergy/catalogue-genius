@@ -25,19 +25,6 @@ export const Route = createFileRoute("/auth")({
 
 type Role = "admin" | "salesperson";
 
-async function routeByRole(navigate: ReturnType<typeof useNavigate>) {
-  const { data: sess } = await supabase.auth.getSession();
-  if (!sess.session) return;
-  const { data: roles } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", sess.session.user.id);
-  const set = new Set((roles ?? []).map((r) => r.role));
-  if (set.has("admin")) navigate({ to: "/admin" });
-  else if (set.has("salesperson")) navigate({ to: "/sales" });
-  else navigate({ to: "/" });
-}
-
 function AuthPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
@@ -48,8 +35,50 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [existingSession, setExistingSession] = useState<{ email: string; roles: string[] } | null>(null);
 
-  useEffect(() => { routeByRole(navigate); }, [navigate]);
+  const routeAfterAuth = async () => {
+    const { data: sess } = await supabase.auth.getSession();
+    if (!sess.session) return;
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", sess.session.user.id);
+    const set = new Set((roles ?? []).map((r) => r.role));
+    if (set.has("admin")) navigate({ to: "/admin" });
+    else if (set.has("salesperson")) navigate({ to: "/sales" });
+    else navigate({ to: "/" });
+  };
+
+  useEffect(() => {
+    (async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) return;
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", sess.session.user.id);
+      const roleList = (roles ?? []).map((r) => r.role);
+      const wantsAdmin = selectedRole === "admin";
+      const isAdmin = roleList.includes("admin");
+      const isSales = roleList.includes("salesperson");
+      // Already signed in with a matching role — go to their panel.
+      if ((wantsAdmin && isAdmin) || (!wantsAdmin && (isSales || isAdmin))) {
+        if (isAdmin && wantsAdmin) navigate({ to: "/admin" });
+        else if (isSales) navigate({ to: "/sales" });
+        else navigate({ to: "/admin" });
+        return;
+      }
+      // Signed in but requesting a role they don't have — offer sign-out.
+      setExistingSession({ email: sess.session.user.email ?? "", roles: roleList });
+    })();
+  }, [navigate, selectedRole]);
+
+  const signOutHere = async () => {
+    await supabase.auth.signOut();
+    setExistingSession(null);
+    toast.success("Signed out. You can now log in with another account.");
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +103,7 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Signed in.");
       }
-      await routeByRole(navigate);
+      await routeAfterAuth();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
     } finally {
@@ -92,6 +121,17 @@ function AuthPage() {
             {mode === "signup" ? `Create ${role === "admin" ? "admin" : "staff"} account` : SHOP_CONFIG.name}
           </p>
         </div>
+        {existingSession && (
+          <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
+            You are signed in as <strong>{existingSession.email}</strong>
+            {existingSession.roles.length > 0 && <> ({existingSession.roles.join(", ")})</>}.
+            To log in as {selectedRole === "admin" ? "an admin" : "staff"} with another account, sign out first.
+            <button type="button" onClick={signOutHere}
+              className="mt-2 w-full rounded-md bg-amber-600 py-1.5 text-xs font-semibold text-white hover:bg-amber-700">
+              Sign out
+            </button>
+          </div>
+        )}
         <form onSubmit={submit} className="space-y-3">
           {mode === "signup" && (
             <>
