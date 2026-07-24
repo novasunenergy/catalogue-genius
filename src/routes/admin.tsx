@@ -447,6 +447,7 @@ function AdminPage() {
 
 
       {editing && <ProductEditor initial={editing} categories={categories} brands={brands} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}
+      {editingOrder && <OrderEditor initial={editingOrder} onClose={() => setEditingOrder(null)} onSaved={(updated) => { setOrders((os) => os.map((o) => o.id === updated.id ? updated : o)); setEditingOrder(null); }} />}
     </div>
   );
 }
