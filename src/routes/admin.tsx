@@ -20,6 +20,9 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
+type OrderStatus = "Ordered" | "Delivered" | "Cancelled";
+type PaymentStatus = "Done" | "Pending" | "On Credit";
+
 type Order = {
   id: string;
   salesperson_name: string;
@@ -33,6 +36,8 @@ type Order = {
   price: number;
   quantity: number;
   unit: string;
+  status: OrderStatus;
+  payment_status: PaymentStatus;
   created_at: string;
 };
 
