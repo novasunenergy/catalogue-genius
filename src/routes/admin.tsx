@@ -102,21 +102,38 @@ function AdminPage() {
     setBrands(b.data?.map((r) => r.name) ?? []);
   };
 
+  const loadOrders = async () => {
+    const [y, m] = orderMonth.split("-").map(Number);
+    const start = new Date(y, m - 1, 1).toISOString();
+    const end = new Date(y, m, 1).toISOString();
+    const { data } = await supabase
+      .from("orders")
+      .select("*")
+      .gte("created_at", start)
+      .lt("created_at", end)
+      .order("created_at", { ascending: false });
+    setOrders((data as Order[]) ?? []);
+  };
+
   useEffect(() => {
     if (!authorized) return;
-    (async () => {
-      const [y, m] = orderMonth.split("-").map(Number);
-      const start = new Date(y, m - 1, 1).toISOString();
-      const end = new Date(y, m, 1).toISOString();
-      const { data } = await supabase
-        .from("orders")
-        .select("*")
-        .gte("created_at", start)
-        .lt("created_at", end)
-        .order("created_at", { ascending: false });
-      setOrders((data as Order[]) ?? []);
-    })();
+    loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authorized, orderMonth]);
+
+  const updateOrderField = async (id: string, patch: Partial<Order>) => {
+    setOrders((os) => os.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+    const { error } = await supabase.from("orders").update(patch).eq("id", id);
+    if (error) { toast.error(error.message); loadOrders(); }
+  };
+
+  const deleteOrder = async (id: string) => {
+    if (!confirm("Delete this order?")) return;
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Order deleted");
+    setOrders((os) => os.filter((o) => o.id !== id));
+  };
 
   const exportOrdersCsv = () => {
     if (!orders.length) { toast.error("No orders in this month"); return; }
