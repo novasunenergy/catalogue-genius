@@ -13,9 +13,9 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Team Login — Mayur Hardware" },
-      { name: "description", content: "Admin and staff sign-in for Mayur Hardware catalogue management and order entry." },
+      { name: "description", content: "Admin and salesperson sign-in for Mayur Hardware catalogue management and order entry." },
       { property: "og:title", content: "Team Login — Mayur Hardware" },
-      { property: "og:description", content: "Admin and staff sign-in for Mayur Hardware catalogue management and order entry." },
+      { property: "og:description", content: "Admin and salesperson sign-in for Mayur Hardware catalogue management and order entry." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -116,16 +116,16 @@ function AuthPage() {
       <div className="w-full max-w-sm rounded-lg bg-card border shadow-lg p-6">
         <div className="flex flex-col items-center gap-2 mb-4">
           <img src={logo} alt={SHOP_CONFIG.name} width={64} height={64} className="h-16 w-16" />
-          <h1 className="text-xl font-bold">{selectedRole === "admin" ? "Admin Login" : "Staff Login"}</h1>
+          <h1 className="text-xl font-bold">{selectedRole === "admin" ? "Admin Login" : "Salesperson Login"}</h1>
           <p className="text-sm text-muted-foreground">
-            {mode === "signup" ? `Create ${role === "admin" ? "admin" : "staff"} account` : SHOP_CONFIG.name}
+            {mode === "signup" ? `Create ${role === "admin" ? "admin" : "salesperson"} account` : SHOP_CONFIG.name}
           </p>
         </div>
         {existingSession && (
           <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
             You are signed in as <strong>{existingSession.email}</strong>
             {existingSession.roles.length > 0 && <> ({existingSession.roles.join(", ")})</>}.
-            To log in as {selectedRole === "admin" ? "an admin" : "staff"} with another account, sign out first.
+            To log in as {selectedRole === "admin" ? "an admin" : "salesperson"} with another account, sign out first.
             <button type="button" onClick={signOutHere}
               className="mt-2 w-full rounded-md bg-amber-600 py-1.5 text-xs font-semibold text-white hover:bg-amber-700">
               Sign out

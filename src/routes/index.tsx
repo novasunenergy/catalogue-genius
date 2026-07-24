@@ -99,7 +99,7 @@ function CataloguePage() {
               search={{ role: "salesperson" }}
               className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
             >
-              <ClipboardList className="h-4 w-4" /> Staff Login
+              <ClipboardList className="h-4 w-4" /> Salesperson Login
             </Link>
           </div>
         </div>

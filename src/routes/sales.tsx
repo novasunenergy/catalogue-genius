@@ -8,10 +8,10 @@ import { Search, MessageCircle, Minus, Plus, ImageOff, LogOut, ClipboardList } f
 export const Route = createFileRoute("/sales")({
   head: () => ({
     meta: [
-      { title: "Staff Orders — Mayur Hardware" },
-      { name: "description", content: "Mayur Hardware staff order-entry panel for creating WhatsApp orders and recording customer requests." },
-      { property: "og:title", content: "Staff Orders — Mayur Hardware" },
-      { property: "og:description", content: "Mayur Hardware staff order-entry panel for creating WhatsApp orders and recording customer requests." },
+      { title: "Salesperson Orders — Mayur Hardware" },
+      { name: "description", content: "Mayur Hardware salesperson order-entry panel for creating WhatsApp orders and recording customer requests." },
+      { property: "og:title", content: "Salesperson Orders — Mayur Hardware" },
+      { property: "og:description", content: "Mayur Hardware salesperson order-entry panel for creating WhatsApp orders and recording customer requests." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -104,7 +104,7 @@ function SalesPage() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 bg-header text-header-foreground shadow-md">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-3 py-2 sm:gap-4 sm:px-4 sm:py-3">
-          <div className="font-bold">{SHOP_CONFIG.name} · Staff Orders</div>
+          <div className="font-bold">{SHOP_CONFIG.name} · Salesperson Orders</div>
           <div className="flex-1" />
           <div className="hidden sm:block text-xs opacity-80">
             <ClipboardList className="inline h-3.5 w-3.5 mr-1" />

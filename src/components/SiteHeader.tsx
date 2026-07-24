@@ -59,7 +59,7 @@ export function SiteHeader() {
         )}
         {!signedIn && (
           <Link to="/auth" search={{ role: "salesperson" }} className="flex items-center gap-1.5 rounded-md bg-header-accent px-3 py-1.5 text-sm font-medium hover:bg-header-accent/80">
-            <ClipboardList className="h-4 w-4" /> <span className="hidden sm:inline">Staff</span>
+            <ClipboardList className="h-4 w-4" /> <span className="hidden sm:inline">Salesperson</span>
           </Link>
         )}
       </div>
