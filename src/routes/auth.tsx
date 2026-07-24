@@ -140,7 +140,7 @@ function AuthPage() {
                 <div className="mt-1 grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => setRole("salesperson")}
                     className={`rounded-md border py-2 text-sm ${role === "salesperson" ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`}>
-                    Staff
+                    Salesperson
                   </button>
                   <button type="button" onClick={() => setRole("admin")}
                     className={`rounded-md border py-2 text-sm ${role === "admin" ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`}>
