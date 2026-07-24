@@ -69,6 +69,7 @@ function AdminPage() {
   const [importing, setImporting] = useState(false);
   const xlsxRef = useRef<HTMLInputElement>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [orderMonth, setOrderMonth] = useState<string>(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
