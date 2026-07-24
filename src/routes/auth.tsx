@@ -40,10 +40,23 @@ function AuthPage() {
   const routeAfterAuth = async () => {
     const { data: sess } = await supabase.auth.getSession();
     if (!sess.session) return;
-    const { data: roles } = await supabase
+    let { data: roles } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", sess.session.user.id);
+    // Fallback: if user has no role yet (e.g. signup completed after email confirm),
+    // claim the role from user metadata now that we have a valid session.
+    if (!roles || roles.length === 0) {
+      const meta = sess.session.user.user_metadata as { role?: Role } | null;
+      const requested: Role = meta?.role === "admin" ? "admin" : "salesperson";
+      try {
+        await claimSignupRole({ data: { requested } });
+        const r = await supabase.from("user_roles").select("role").eq("user_id", sess.session.user.id);
+        roles = r.data ?? [];
+      } catch {
+        // ignore; will fall through
+      }
+    }
     const set = new Set((roles ?? []).map((r) => r.role));
     if (set.has("admin")) navigate({ to: "/admin" });
     else if (set.has("salesperson")) navigate({ to: "/sales" });
