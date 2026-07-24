@@ -140,12 +140,14 @@ function AdminPage() {
     const cols = [
       "Date", "Salesperson", "Customer", "Product Code", "Product Name",
       "Brand", "Category", "Size", "Finish", "Price", "Quantity", "Unit",
+      "Status", "Payment",
     ];
     const rows = orders.map((o) => [
       new Date(o.created_at).toLocaleString("en-IN"),
       o.salesperson_name, o.customer_name, o.product_code, o.product_name,
       o.brand ?? "", o.category ?? "", o.size ?? "", o.finish ?? "",
       String(o.price), String(o.quantity), o.unit,
+      o.status, o.payment_status,
     ]);
     const csv = [cols, ...rows]
       .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
