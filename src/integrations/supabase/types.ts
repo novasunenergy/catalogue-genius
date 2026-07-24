@@ -58,6 +58,7 @@ export type Database = {
           customer_name: string
           finish: string | null
           id: string
+          payment_status: string
           price: number
           product_code: string
           product_id: string | null
@@ -66,6 +67,7 @@ export type Database = {
           salesperson_id: string | null
           salesperson_name: string
           size: string | null
+          status: string
           unit: string
         }
         Insert: {
@@ -75,6 +77,7 @@ export type Database = {
           customer_name: string
           finish?: string | null
           id?: string
+          payment_status?: string
           price?: number
           product_code: string
           product_id?: string | null
@@ -83,6 +86,7 @@ export type Database = {
           salesperson_id?: string | null
           salesperson_name: string
           size?: string | null
+          status?: string
           unit?: string
         }
         Update: {
@@ -92,6 +96,7 @@ export type Database = {
           customer_name?: string
           finish?: string | null
           id?: string
+          payment_status?: string
           price?: number
           product_code?: string
           product_id?: string | null
@@ -100,6 +105,7 @@ export type Database = {
           salesperson_id?: string | null
           salesperson_name?: string
           size?: string | null
+          status?: string
           unit?: string
         }
         Relationships: [
