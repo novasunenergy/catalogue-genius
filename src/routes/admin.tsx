@@ -368,6 +368,9 @@ function AdminPage() {
                   <th className="px-3 py-2 text-left">Size</th>
                   <th className="px-3 py-2 text-left">Finish</th>
                   <th className="px-3 py-2 text-right">Qty</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Payment</th>
+                  <th className="px-3 py-2"></th>
                 </tr>
               </thead>
               <tbody>
@@ -381,7 +384,33 @@ function AdminPage() {
                     <td className="px-3 py-2">{o.brand}</td>
                     <td className="px-3 py-2">{o.size}</td>
                     <td className="px-3 py-2">{o.finish}</td>
-                    <td className="px-3 py-2 text-right">{o.quantity} {o.unit}</td>
+                    <td className="px-3 py-2 text-right whitespace-nowrap">{o.quantity} {o.unit}</td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={o.status}
+                        onChange={(e) => updateOrderField(o.id, { status: e.target.value as OrderStatus })}
+                        className={`rounded border px-1.5 py-1 text-xs ${o.status === "Delivered" ? "bg-green-50 text-green-700" : o.status === "Cancelled" ? "bg-red-50 text-red-700" : "bg-blue-50 text-blue-700"}`}
+                      >
+                        <option value="Ordered">Ordered</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={o.payment_status}
+                        onChange={(e) => updateOrderField(o.id, { payment_status: e.target.value as PaymentStatus })}
+                        className={`rounded border px-1.5 py-1 text-xs ${o.payment_status === "Done" ? "bg-green-50 text-green-700" : o.payment_status === "On Credit" ? "bg-amber-50 text-amber-700" : "bg-slate-50 text-slate-700"}`}
+                      >
+                        <option value="Done">Done</option>
+                        <option value="Pending">Pending</option>
+                        <option value="On Credit">On Credit</option>
+                      </select>
+                    </td>
+                    <td className="px-3 py-2 text-right whitespace-nowrap">
+                      <button onClick={() => setEditingOrder(o)} className="text-primary hover:underline mr-3 text-xs">Edit</button>
+                      <button onClick={() => deleteOrder(o.id)} className="text-destructive hover:underline" aria-label="Delete order"><Trash2 className="h-4 w-4 inline" /></button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
