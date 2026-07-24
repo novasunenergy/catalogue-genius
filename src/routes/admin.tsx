@@ -20,6 +20,9 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
+type OrderStatus = "Ordered" | "Delivered" | "Cancelled";
+type PaymentStatus = "Done" | "Pending" | "On Credit";
+
 type Order = {
   id: string;
   salesperson_name: string;
@@ -33,6 +36,8 @@ type Order = {
   price: number;
   quantity: number;
   unit: string;
+  status: OrderStatus;
+  payment_status: PaymentStatus;
   created_at: string;
 };
 
@@ -64,6 +69,7 @@ function AdminPage() {
   const [importing, setImporting] = useState(false);
   const xlsxRef = useRef<HTMLInputElement>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [orderMonth, setOrderMonth] = useState<string>(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -96,33 +102,52 @@ function AdminPage() {
     setBrands(b.data?.map((r) => r.name) ?? []);
   };
 
+  const loadOrders = async () => {
+    const [y, m] = orderMonth.split("-").map(Number);
+    const start = new Date(y, m - 1, 1).toISOString();
+    const end = new Date(y, m, 1).toISOString();
+    const { data } = await supabase
+      .from("orders")
+      .select("*")
+      .gte("created_at", start)
+      .lt("created_at", end)
+      .order("created_at", { ascending: false });
+    setOrders((data as Order[]) ?? []);
+  };
+
   useEffect(() => {
     if (!authorized) return;
-    (async () => {
-      const [y, m] = orderMonth.split("-").map(Number);
-      const start = new Date(y, m - 1, 1).toISOString();
-      const end = new Date(y, m, 1).toISOString();
-      const { data } = await supabase
-        .from("orders")
-        .select("*")
-        .gte("created_at", start)
-        .lt("created_at", end)
-        .order("created_at", { ascending: false });
-      setOrders((data as Order[]) ?? []);
-    })();
+    loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authorized, orderMonth]);
+
+  const updateOrderField = async (id: string, patch: Partial<Order>) => {
+    setOrders((os) => os.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+    const { error } = await supabase.from("orders").update(patch).eq("id", id);
+    if (error) { toast.error(error.message); loadOrders(); }
+  };
+
+  const deleteOrder = async (id: string) => {
+    if (!confirm("Delete this order?")) return;
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Order deleted");
+    setOrders((os) => os.filter((o) => o.id !== id));
+  };
 
   const exportOrdersCsv = () => {
     if (!orders.length) { toast.error("No orders in this month"); return; }
     const cols = [
       "Date", "Salesperson", "Customer", "Product Code", "Product Name",
       "Brand", "Category", "Size", "Finish", "Price", "Quantity", "Unit",
+      "Status", "Payment",
     ];
     const rows = orders.map((o) => [
       new Date(o.created_at).toLocaleString("en-IN"),
       o.salesperson_name, o.customer_name, o.product_code, o.product_name,
       o.brand ?? "", o.category ?? "", o.size ?? "", o.finish ?? "",
       String(o.price), String(o.quantity), o.unit,
+      o.status, o.payment_status,
     ]);
     const csv = [cols, ...rows]
       .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
@@ -343,6 +368,9 @@ function AdminPage() {
                   <th className="px-3 py-2 text-left">Size</th>
                   <th className="px-3 py-2 text-left">Finish</th>
                   <th className="px-3 py-2 text-right">Qty</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Payment</th>
+                  <th className="px-3 py-2"></th>
                 </tr>
               </thead>
               <tbody>
@@ -356,7 +384,33 @@ function AdminPage() {
                     <td className="px-3 py-2">{o.brand}</td>
                     <td className="px-3 py-2">{o.size}</td>
                     <td className="px-3 py-2">{o.finish}</td>
-                    <td className="px-3 py-2 text-right">{o.quantity} {o.unit}</td>
+                    <td className="px-3 py-2 text-right whitespace-nowrap">{o.quantity} {o.unit}</td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={o.status}
+                        onChange={(e) => updateOrderField(o.id, { status: e.target.value as OrderStatus })}
+                        className={`rounded border px-1.5 py-1 text-xs ${o.status === "Delivered" ? "bg-green-50 text-green-700" : o.status === "Cancelled" ? "bg-red-50 text-red-700" : "bg-blue-50 text-blue-700"}`}
+                      >
+                        <option value="Ordered">Ordered</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={o.payment_status}
+                        onChange={(e) => updateOrderField(o.id, { payment_status: e.target.value as PaymentStatus })}
+                        className={`rounded border px-1.5 py-1 text-xs ${o.payment_status === "Done" ? "bg-green-50 text-green-700" : o.payment_status === "On Credit" ? "bg-amber-50 text-amber-700" : "bg-slate-50 text-slate-700"}`}
+                      >
+                        <option value="Done">Done</option>
+                        <option value="Pending">Pending</option>
+                        <option value="On Credit">On Credit</option>
+                      </select>
+                    </td>
+                    <td className="px-3 py-2 text-right whitespace-nowrap">
+                      <button onClick={() => setEditingOrder(o)} className="text-primary hover:underline mr-3 text-xs">Edit</button>
+                      <button onClick={() => deleteOrder(o.id)} className="text-destructive hover:underline" aria-label="Delete order"><Trash2 className="h-4 w-4 inline" /></button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -393,6 +447,7 @@ function AdminPage() {
 
 
       {editing && <ProductEditor initial={editing} categories={categories} brands={brands} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}
+      {editingOrder && <OrderEditor initial={editingOrder} onClose={() => setEditingOrder(null)} onSaved={(updated) => { setOrders((os) => os.map((o) => o.id === updated.id ? updated : o)); setEditingOrder(null); }} />}
     </div>
   );
 }
@@ -516,6 +571,84 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div>
       <label className="text-xs font-medium text-muted-foreground">{label}</label>
       <div className="mt-1">{children}</div>
+    </div>
+  );
+}
+
+function OrderEditor({ initial, onClose, onSaved }: {
+  initial: Order; onClose: () => void; onSaved: (updated: Order) => void;
+}) {
+  const [form, setForm] = useState<Order>(initial);
+  const [saving, setSaving] = useState(false);
+  const set = <K extends keyof Order>(k: K, v: Order[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const save = async () => {
+    setSaving(true);
+    const patch = {
+      size: form.size || null,
+      finish: form.finish || null,
+      quantity: Number(form.quantity) || 1,
+      unit: form.unit,
+      status: form.status,
+      payment_status: form.payment_status,
+    };
+    const { error } = await supabase.from("orders").update(patch).eq("id", form.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Order updated");
+    onSaved({ ...form, ...patch });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-auto">
+      <div className="w-full max-w-md rounded-lg bg-card border shadow-xl">
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <div className="font-semibold">Edit order</div>
+          <button onClick={onClose}><X className="h-4 w-4" /></button>
+        </div>
+        <div className="p-4 space-y-3">
+          <div className="text-xs text-muted-foreground">
+            <div><span className="font-medium">{form.product_name}</span> · <span className="font-mono">{form.product_code}</span></div>
+            <div>Customer: {form.customer_name} · Salesperson: {form.salesperson_name}</div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Size"><input value={form.size ?? ""} onChange={(e) => set("size", e.target.value)} className="input" /></Field>
+            <Field label="Finish"><input value={form.finish ?? ""} onChange={(e) => set("finish", e.target.value)} className="input" /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Quantity"><input type="number" min={1} value={form.quantity} onChange={(e) => set("quantity", Number(e.target.value))} className="input" /></Field>
+            <Field label="Unit">
+              <select value={form.unit} onChange={(e) => set("unit", e.target.value)} className="input">
+                <option value="Nos">Nos</option>
+                <option value="Box">Box</option>
+              </select>
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Status">
+              <select value={form.status} onChange={(e) => set("status", e.target.value as OrderStatus)} className="input">
+                <option value="Ordered">Ordered</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </Field>
+            <Field label="Payment">
+              <select value={form.payment_status} onChange={(e) => set("payment_status", e.target.value as PaymentStatus)} className="input">
+                <option value="Done">Done</option>
+                <option value="Pending">Pending</option>
+                <option value="On Credit">On Credit</option>
+              </select>
+            </Field>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 border-t px-4 py-3">
+          <button onClick={onClose} className="rounded px-3 py-1.5 text-sm hover:bg-muted">Cancel</button>
+          <button onClick={save} disabled={saving} className="flex items-center gap-1 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60">
+            <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+      <style>{`.input{width:100%;border:1px solid var(--color-border);border-radius:6px;padding:6px 10px;font-size:14px;background:var(--color-background)}.input:focus{outline:none;box-shadow:0 0 0 2px var(--color-primary)}`}</style>
     </div>
   );
 }
