@@ -170,12 +170,8 @@ function CataloguePage() {
   );
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
   const [qty, setQty] = useState(1);
-  const priceStr = useMemo(
-    () => `${SHOP_CONFIG.currency}${Number(product.price).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`,
-    [product.price]
-  );
 
   const whatsappHref = useMemo(() => {
     const msg =
@@ -183,34 +179,29 @@ function ProductCard({ product }: { product: Product }) {
       `Product Code: ${product.code}\n` +
       `Product Name: ${product.name}\n` +
       `Brand: ${product.brand ?? "-"}\n` +
-      `Price: ${priceStr}\n` +
       `Quantity: ${qty}`;
     return `https://wa.me/${SHOP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
-  }, [product, qty, priceStr]);
+  }, [product, qty]);
 
   return (
     <div className="flex flex-col rounded-md border bg-card p-2.5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="aspect-square w-full overflow-hidden rounded bg-muted flex items-center justify-center">
+      <button onClick={onOpen} className="aspect-square w-full overflow-hidden rounded bg-muted flex items-center justify-center">
         {product.image_url ? (
           <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-contain" />
         ) : (
           <ImageOff className="h-10 w-10 text-muted-foreground" />
         )}
-      </div>
-      <div className="mt-2 space-y-0.5 flex-1">
+      </button>
+      <button onClick={onOpen} className="mt-2 space-y-0.5 flex-1 text-left">
         <div className="text-[11px] uppercase tracking-wide text-muted-foreground truncate">{product.brand ?? " "}</div>
-        <div className="text-sm font-medium leading-snug line-clamp-2 min-h-[2.5rem]">{product.name}</div>
+        <div className="text-sm font-medium leading-snug line-clamp-2 min-h-[2.5rem] hover:underline">{product.name}</div>
         <div className="text-[11px] text-muted-foreground">Code: {product.code}</div>
         {(product.size || product.finish) && (
           <div className="text-[11px] text-muted-foreground truncate">
             {[product.size && `Size: ${product.size}`, product.finish && `Finish: ${product.finish}`].filter(Boolean).join(" · ")}
           </div>
         )}
-        {product.description && (
-          <div className="text-[11px] text-muted-foreground line-clamp-2">{product.description}</div>
-        )}
-      </div>
-      <div className="mt-2 text-lg font-bold text-price">{priceStr}</div>
+      </button>
       <div className="mt-2 flex items-center gap-1">
         <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="rounded border p-1 hover:bg-muted"><Minus className="h-3.5 w-3.5" /></button>
         <input type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} className="w-full rounded border px-2 py-1 text-center text-sm" />
@@ -224,6 +215,65 @@ function ProductCard({ product }: { product: Product }) {
       >
         <MessageCircle className="h-4 w-4" /> Enquire on WhatsApp
       </a>
+    </div>
+  );
+}
+
+function ProductDetailModal({ product, onClose }: { product: Product; onClose: () => void }) {
+  const [qty, setQty] = useState(1);
+  const whatsappHref = useMemo(() => {
+    const msg =
+      `Hello, I would like to enquire about:\n\n` +
+      `Product Code: ${product.code}\n` +
+      `Product Name: ${product.name}\n` +
+      `Brand: ${product.brand ?? "-"}\n` +
+      `Quantity: ${qty}`;
+    return `https://wa.me/${SHOP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+  }, [product, qty]);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 overflow-auto" onClick={onClose}>
+      <div className="w-full max-w-3xl rounded-lg bg-card border shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <div className="font-semibold truncate">{product.name}</div>
+          <button onClick={onClose} className="p-1 rounded hover:bg-muted"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="grid gap-4 p-4 md:grid-cols-2">
+          <div className="aspect-square w-full overflow-hidden rounded bg-muted flex items-center justify-center">
+            {product.image_url ? (
+              <img src={product.image_url} alt={product.name} className="h-full w-full object-contain" />
+            ) : (
+              <ImageOff className="h-16 w-16 text-muted-foreground" />
+            )}
+          </div>
+          <div className="space-y-2 text-sm">
+            {product.brand && <div className="text-xs uppercase tracking-wide text-muted-foreground">{product.brand}</div>}
+            <div><span className="text-muted-foreground">Code:</span> <span className="font-mono">{product.code}</span></div>
+            {product.category && <div><span className="text-muted-foreground">Category:</span> {product.category}</div>}
+            {product.size && <div><span className="text-muted-foreground">Size:</span> {product.size}</div>}
+            {product.finish && <div><span className="text-muted-foreground">Finish:</span> {product.finish}</div>}
+            {product.description && (
+              <div className="pt-2">
+                <div className="text-muted-foreground text-xs mb-1">Description</div>
+                <div className="whitespace-pre-wrap">{product.description}</div>
+              </div>
+            )}
+            <div className="pt-3 flex items-center gap-2">
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="rounded border p-1.5 hover:bg-muted"><Minus className="h-4 w-4" /></button>
+              <input type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} className="w-20 rounded border px-2 py-1.5 text-center" />
+              <button onClick={() => setQty((q) => q + 1)} className="rounded border p-1.5 hover:bg-muted"><Plus className="h-4 w-4" /></button>
+            </div>
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-md bg-whatsapp px-4 py-2 text-sm font-semibold text-whatsapp-foreground hover:opacity-90"
+            >
+              <MessageCircle className="h-4 w-4" /> Enquire on WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
