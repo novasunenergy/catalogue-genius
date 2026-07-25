@@ -182,6 +182,22 @@ function AuthPage() {
             {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
           </button>
         </form>
+        <div className="mt-3 text-center text-xs">
+          <button
+            type="button"
+            className="text-primary underline"
+            onClick={async () => {
+              if (!email) return toast.error("Enter your email first");
+              const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+              });
+              if (error) toast.error(error.message);
+              else toast.success("Password reset email sent. Check your inbox.");
+            }}
+          >
+            Forgot password?
+          </button>
+        </div>
         <div className="mt-3 text-center text-xs text-muted-foreground">
           {mode === "signin" ? (
             <>No account? <button className="text-primary underline" onClick={() => setMode("signup")}>Create one</button></>
@@ -189,6 +205,7 @@ function AuthPage() {
             <>Have an account? <button className="text-primary underline" onClick={() => setMode("signin")}>Sign in</button></>
           )}
         </div>
+
         <div className="mt-3 text-center text-[10px] text-muted-foreground">
           Customers do not need to sign in — the product catalogue opens directly from the QR code or share link.
         </div>
