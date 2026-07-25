@@ -150,7 +150,7 @@ function CataloguePage() {
           {loading ? "Searching..." : `${products.length} product${products.length === 1 ? "" : "s"}`}
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {products.map((p) => <ProductCard key={p.id} product={p} />)}
+          {products.map((p) => <ProductCard key={p.id} product={p} onOpen={() => setSelected(p)} />)}
         </div>
         {!loading && products.length === 0 && (
           <div className="mt-16 text-center text-muted-foreground">
@@ -158,6 +158,8 @@ function CataloguePage() {
           </div>
         )}
       </main>
+
+      {selected && <ProductDetailModal product={selected} onClose={() => setSelected(null)} />}
 
       <footer className="border-t bg-header text-header-foreground/80 py-6 mt-8">
         <div className="mx-auto max-w-7xl px-4 text-center text-sm">
