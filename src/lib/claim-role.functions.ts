@@ -31,15 +31,11 @@ export const claimSignupRole = createServerFn({ method: "POST" })
 
     let assigned: "admin" | "salesperson" | "user" = "user";
     if (data.requested === "admin") {
-      const { data: admins } = await supabaseAdmin
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin")
-        .limit(1);
-      if (!admins || admins.length === 0) assigned = "admin";
+      assigned = "admin";
     } else if (data.requested === "salesperson") {
       assigned = "salesperson";
     }
+
     const { error: insErr } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: uid, role: assigned });
