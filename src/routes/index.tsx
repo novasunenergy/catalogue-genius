@@ -41,6 +41,7 @@ function CataloguePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCategories, setNewCategories] = useState<string[]>([]);
+  const [selected, setSelected] = useState<Product | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
