@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Search, MessageCircle, Minus, Plus, ImageOff, ShieldCheck, ClipboardList } from "lucide-react";
+import { Search, MessageCircle, Minus, Plus, ImageOff, ShieldCheck, ClipboardList, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
