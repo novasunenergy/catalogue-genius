@@ -471,18 +471,20 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
   const upload = async (file: File) => {
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
       const path = `${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      const { error } = await supabase.storage.from("product-images").upload(path, file, {
+        upsert: false,
+        contentType: file.type || undefined,
+      });
       if (error) throw error;
-      // Bucket is private (public buckets are blocked by workspace policy), so use a long-lived signed URL
-      const { data: signed, error: signErr } = await supabase.storage
-        .from("product-images")
-        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10); // 10 years
-      if (signErr || !signed) throw signErr ?? new Error("Failed to create signed URL");
-      setForm((f) => ({ ...f, image_url: signed.signedUrl }));
-      toast.success("Image uploaded");
+      // Bucket has an anon SELECT policy, so the public URL is reachable and never expires.
+      const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
+      if (!pub?.publicUrl) throw new Error("Failed to resolve image URL");
+      setForm((f) => ({ ...f, image_url: pub.publicUrl }));
+      toast.success("Image uploaded — click Save to keep it");
     } catch (e) {
+      console.error("[upload]", e);
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally { setUploading(false); }
   };
