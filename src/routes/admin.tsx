@@ -478,10 +478,12 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
         contentType: file.type || undefined,
       });
       if (error) throw error;
-      // Bucket has an anon SELECT policy, so the public URL is reachable and never expires.
-      const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
-      if (!pub?.publicUrl) throw new Error("Failed to resolve image URL");
-      setForm((f) => ({ ...f, image_url: pub.publicUrl }));
+      const { data: signed, error: signedError } = await supabase.storage
+        .from("product-images")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (signedError) throw signedError;
+      if (!signed?.signedUrl) throw new Error("Failed to resolve image URL");
+      setForm((f) => ({ ...f, image_url: signed.signedUrl }));
       toast.success("Image uploaded — click Save to keep it");
     } catch (e) {
       console.error("[upload]", e);
