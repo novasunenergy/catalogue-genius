@@ -479,7 +479,8 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
         contentType: file.type || undefined,
       });
       if (error) throw error;
-      setForm((f) => ({ ...f, image_url: await createProductImageUrl(path) }));
+      const imageUrl = await createProductImageUrl(path);
+      setForm((f) => ({ ...f, image_url: imageUrl }));
       toast.success("Image uploaded — click Save to keep it");
     } catch (e) {
       console.error("[upload]", e);
