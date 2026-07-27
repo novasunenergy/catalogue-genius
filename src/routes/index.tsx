@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
+import { normalizeProductImageUrls } from "@/lib/product-images";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Search, MessageCircle, Minus, Plus, ImageOff, ShieldCheck, ClipboardList, X } from "lucide-react";
 
@@ -71,7 +72,7 @@ function CataloguePage() {
       if (category) q = q.eq("category", category);
       if (brand) q = q.eq("brand", brand);
       const { data } = await q;
-      setProducts((data as Product[]) ?? []);
+      setProducts(await normalizeProductImageUrls((data as Product[]) ?? []));
       setLoading(false);
     }, 150);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };

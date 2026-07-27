@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
+import { normalizeProductImageUrls } from "@/lib/product-images";
 import { toast } from "sonner";
 import { Search, MessageCircle, Minus, Plus, ImageOff, LogOut, ClipboardList } from "lucide-react";
 
@@ -85,7 +86,7 @@ function SalesPage() {
       if (category) q = q.eq("category", category);
       if (brand) q = q.eq("brand", brand);
       const { data } = await q;
-      setProducts((data as Product[]) ?? []);
+      setProducts(await normalizeProductImageUrls((data as Product[]) ?? []));
       setSearching(false);
     }, 150);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
