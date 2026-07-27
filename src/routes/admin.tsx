@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
+import { createProductImageUrl, normalizeProductImageUrls } from "@/lib/product-images";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { LogOut, Trash2, Upload, Plus, Save, X, ImageIcon, FileSpreadsheet, QrCode, Download } from "lucide-react";
@@ -97,7 +98,7 @@ function AdminPage() {
       supabase.from("categories").select("name").order("name"),
       supabase.from("brands").select("name").order("name"),
     ]);
-    setProducts((p.data as Product[]) ?? []);
+    setProducts(await normalizeProductImageUrls((p.data as Product[]) ?? []));
     setCategories(c.data?.map((r) => r.name) ?? []);
     setBrands(b.data?.map((r) => r.name) ?? []);
   };
@@ -478,12 +479,7 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
         contentType: file.type || undefined,
       });
       if (error) throw error;
-      const { data: signed, error: signedError } = await supabase.storage
-        .from("product-images")
-        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
-      if (signedError) throw signedError;
-      if (!signed?.signedUrl) throw new Error("Failed to resolve image URL");
-      setForm((f) => ({ ...f, image_url: signed.signedUrl }));
+      setForm((f) => ({ ...f, image_url: await createProductImageUrl(path) }));
       toast.success("Image uploaded — click Save to keep it");
     } catch (e) {
       console.error("[upload]", e);
