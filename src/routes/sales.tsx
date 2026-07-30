@@ -190,10 +190,6 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
   const [sending, setSending] = useState(false);
 
 
-  const priceStr = useMemo(
-    () => `${SHOP_CONFIG.currency}${Number(product.price).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`,
-    [product.price]
-  );
 
   const updateVariant = (i: number, patch: Partial<Variant>) => {
     setVariants((prev) => prev.map((v, idx) => (idx === i ? { ...v, ...patch } : v)));
