@@ -258,7 +258,22 @@ function ProductDetailModal({ product, onClose }: { product: Product; onClose: (
             {product.brand && <div className="text-xs uppercase tracking-wide text-muted-foreground">{product.brand}</div>}
             <div><span className="text-muted-foreground">Code:</span> <span className="font-mono">{product.code}</span></div>
             {product.category && <div><span className="text-muted-foreground">Category:</span> {product.category}</div>}
-            {product.size && <div><span className="text-muted-foreground">Size:</span> {product.size}</div>}
+            {sizes.length > 0 && (
+              <div>
+                <div className="text-muted-foreground mb-1">Size{sizes.length > 1 ? " (choose one)" : ""}:</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {sizes.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSize(s)}
+                      className={`rounded-full border px-3 py-1 text-xs ${size === s ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {product.finish && <div><span className="text-muted-foreground">Finish:</span> {product.finish}</div>}
             {product.description && (
               <div className="pt-2">
