@@ -195,6 +195,16 @@ function AdminPage() {
     const { error } = await supabase.from("brands").insert({ name });
     if (error) toast.error(error.message); else { toast.success("Brand added"); setNewBrand(""); refresh(); }
   };
+  const deleteCategory = async (name: string) => {
+    if (!confirm(`Remove category "${name}"?`)) return;
+    const { error } = await supabase.from("categories").delete().eq("name", name);
+    if (error) toast.error(error.message); else { toast.success("Category removed"); refresh(); }
+  };
+  const deleteBrand = async (name: string) => {
+    if (!confirm(`Remove brand "${name}"?`)) return;
+    const { error } = await supabase.from("brands").delete().eq("name", name);
+    if (error) toast.error(error.message); else { toast.success("Brand removed"); refresh(); }
+  };
   const deleteProduct = async (id: string) => {
     if (!confirm("Delete this product?")) return;
     const { error } = await supabase.from("products").delete().eq("id", id);
@@ -277,25 +287,36 @@ function AdminPage() {
             </button>
           </Card>
 
-          <Card title="Add Category">
+          <Card title="Categories">
             <div className="flex gap-2">
               <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Door Handles" className="flex-1 rounded border px-2 py-1.5 text-sm" />
               <button onClick={addCategory} className="rounded bg-primary px-3 text-sm text-primary-foreground"><Plus className="h-4 w-4" /></button>
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
-              {categories.map((c) => <span key={c} className="rounded bg-secondary px-2 py-0.5 text-xs">{c}</span>)}
+              {categories.map((c) => (
+                <span key={c} className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs">
+                  {c}
+                  <button onClick={() => deleteCategory(c)} aria-label={`Remove category ${c}`} className="text-destructive hover:opacity-70"><Trash2 className="h-3 w-3" /></button>
+                </span>
+              ))}
             </div>
           </Card>
 
-          <Card title="Add Brand">
+          <Card title="Brands">
             <div className="flex gap-2">
               <input value={newBrand} onChange={(e) => setNewBrand(e.target.value)} placeholder="e.g. Godrej" className="flex-1 rounded border px-2 py-1.5 text-sm" />
               <button onClick={addBrand} className="rounded bg-primary px-3 text-sm text-primary-foreground"><Plus className="h-4 w-4" /></button>
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
-              {brands.map((b) => <span key={b} className="rounded bg-secondary px-2 py-0.5 text-xs">{b}</span>)}
+              {brands.map((b) => (
+                <span key={b} className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs">
+                  {b}
+                  <button onClick={() => deleteBrand(b)} aria-label={`Remove brand ${b}`} className="text-destructive hover:opacity-70"><Trash2 className="h-3 w-3" /></button>
+                </span>
+              ))}
             </div>
           </Card>
+
         </div>
 
         {/* Products */}
@@ -317,7 +338,9 @@ function AdminPage() {
                   <th className="px-3 py-2 text-left">Name</th>
                   <th className="px-3 py-2 text-left">Brand</th>
                   <th className="px-3 py-2 text-left">Category</th>
+                  <th className="px-3 py-2 text-left">Size</th>
                   <th className="px-3 py-2 text-right">Price</th>
+
                   <th className="px-3 py-2"></th>
                 </tr>
               </thead>
@@ -331,7 +354,9 @@ function AdminPage() {
                     <td className="px-3 py-2">{p.name}</td>
                     <td className="px-3 py-2">{p.brand}</td>
                     <td className="px-3 py-2">{p.category}</td>
+                    <td className="px-3 py-2 text-xs">{p.size}</td>
                     <td className="px-3 py-2 text-right">{SHOP_CONFIG.currency}{Number(p.price).toLocaleString("en-IN")}</td>
+
                     <td className="px-3 py-2 text-right">
                       <button onClick={() => setEditing(p)} className="text-primary hover:underline mr-3">Edit</button>
                       <button onClick={() => deleteProduct(p.id)} className="text-destructive hover:underline"><Trash2 className="h-4 w-4 inline" /></button>
