@@ -180,10 +180,15 @@ function SalesPage() {
 type Variant = { size: string; finish: string; qty: number; unit: "Nos" | "Box" };
 
 function OrderCard({ product, customerName, salespersonName }: { product: Product; customerName: string; salespersonName: string }) {
+  const sizes = useMemo(
+    () => (product.size ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+    [product.size]
+  );
   const [variants, setVariants] = useState<Variant[]>([
-    { size: product.size ?? "", finish: product.finish ?? "", qty: 1, unit: "Nos" },
+    { size: sizes[0] ?? "", finish: product.finish ?? "", qty: 1, unit: "Nos" },
   ]);
   const [sending, setSending] = useState(false);
+
 
   const priceStr = useMemo(
     () => `${SHOP_CONFIG.currency}${Number(product.price).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`,
@@ -254,7 +259,7 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
     <div className="flex flex-col rounded-md border bg-card p-2.5 shadow-sm hover:shadow-md transition-shadow">
       <div className="aspect-square w-full overflow-hidden rounded bg-muted flex items-center justify-center">
         {product.image_url ? (
-          <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-contain" />
+          <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <ImageOff className="h-10 w-10 text-muted-foreground" />
         )}
@@ -276,12 +281,23 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
               )}
             </div>
             <div className="grid grid-cols-2 gap-1">
-              <input
-                value={v.size}
-                onChange={(e) => updateVariant(i, { size: e.target.value })}
-                placeholder="Size"
-                className="rounded border px-1.5 py-1 text-xs"
-              />
+              {sizes.length > 0 ? (
+                <select
+                  value={v.size}
+                  onChange={(e) => updateVariant(i, { size: e.target.value })}
+                  className="rounded border px-1.5 py-1 text-xs"
+                >
+                  <option value="">Size</option>
+                  {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              ) : (
+                <input
+                  value={v.size}
+                  onChange={(e) => updateVariant(i, { size: e.target.value })}
+                  placeholder="Size"
+                  className="rounded border px-1.5 py-1 text-xs"
+                />
+              )}
               <input
                 value={v.finish}
                 onChange={(e) => updateVariant(i, { finish: e.target.value })}

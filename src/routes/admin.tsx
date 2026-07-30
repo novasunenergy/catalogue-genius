@@ -526,10 +526,10 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
           </div>
           <Field label="Product Name *"><input value={form.name} onChange={(e) => set("name", e.target.value)} className="input" /></Field>
           <Field label="Description"><textarea rows={2} value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} className="input" /></Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Size"><input value={form.size ?? ""} onChange={(e) => set("size", e.target.value)} className="input" /></Field>
-            <Field label="Finish"><input value={form.finish ?? ""} onChange={(e) => set("finish", e.target.value)} className="input" /></Field>
-          </div>
+          <Field label="Sizes (add as many as you need)">
+            <SizesInput value={form.size ?? ""} onChange={(v) => set("size", v)} />
+          </Field>
+          <Field label="Finish"><input value={form.finish ?? ""} onChange={(e) => set("finish", e.target.value)} className="input" /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Category">
               <input list="cats" value={form.category ?? ""} onChange={(e) => set("category", e.target.value)} className="input" />
@@ -541,15 +541,22 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
             </Field>
           </div>
           <Field label="Product Image">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               {form.image_url && <img src={form.image_url} alt="" className="h-14 w-14 rounded object-cover border" />}
-              <label className="flex-1 cursor-pointer rounded border border-dashed p-2 text-xs text-center hover:bg-muted">
-                {uploading ? "Uploading..." : "Click to upload image"}
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-              </label>
+              <div className="flex-1 grid grid-cols-2 gap-2">
+                <label className="cursor-pointer rounded border border-dashed p-2 text-xs text-center hover:bg-muted">
+                  {uploading ? "Uploading..." : "Choose picture"}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+                </label>
+                <label className="cursor-pointer rounded border border-dashed p-2 text-xs text-center hover:bg-muted">
+                  {uploading ? "Uploading..." : "Take picture"}
+                  <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+                </label>
+              </div>
               {form.image_url && <button onClick={() => set("image_url", "")} className="text-xs text-destructive">Remove</button>}
             </div>
           </Field>
+
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} />
             Active (visible to customers)
@@ -563,6 +570,45 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
         </div>
       </div>
       <style>{`.input{width:100%;border:1px solid var(--color-border);border-radius:6px;padding:6px 10px;font-size:14px;background:var(--color-background)}.input:focus{outline:none;box-shadow:0 0 0 2px var(--color-primary)}`}</style>
+    </div>
+  );
+}
+
+function SizesInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const sizes = value.split(",").map((s) => s.trim()).filter(Boolean);
+  const [draft, setDraft] = useState("");
+
+  const commit = (list: string[]) => onChange(list.join(", "));
+  const add = () => {
+    const v = draft.trim();
+    if (!v) return;
+    if (!sizes.includes(v)) commit([...sizes, v]);
+    setDraft("");
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          placeholder="e.g. 200 MM"
+          className="input"
+        />
+        <button type="button" onClick={add} className="shrink-0 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">Add</button>
+      </div>
+      {sizes.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {sizes.map((s) => (
+            <span key={s} className="inline-flex items-center gap-1 rounded-full border bg-muted px-2 py-0.5 text-xs">
+              {s}
+              <button type="button" onClick={() => commit(sizes.filter((x) => x !== s))} className="text-destructive">×</button>
+            </span>
+          ))}
+        </div>
+      )}
+      <p className="text-[11px] text-muted-foreground">Add every size this product comes in — customers can pick one when enquiring.</p>
     </div>
   );
 }

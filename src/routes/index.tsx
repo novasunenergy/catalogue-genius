@@ -188,7 +188,7 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
     <div className="flex flex-col rounded-md border bg-card p-2.5 shadow-sm hover:shadow-md transition-shadow">
       <button onClick={onOpen} className="aspect-square w-full overflow-hidden rounded bg-muted flex items-center justify-center">
         {product.image_url ? (
-          <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-contain" />
+          <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <ImageOff className="h-10 w-10 text-muted-foreground" />
         )}
@@ -222,15 +222,22 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
 
 function ProductDetailModal({ product, onClose }: { product: Product; onClose: () => void }) {
   const [qty, setQty] = useState(1);
+  const sizes = useMemo(
+    () => (product.size ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+    [product.size]
+  );
+  const [size, setSize] = useState(sizes[0] ?? "");
   const whatsappHref = useMemo(() => {
     const msg =
       `Hello, I would like to enquire about:\n\n` +
       `Product Code: ${product.code}\n` +
       `Product Name: ${product.name}\n` +
       `Brand: ${product.brand ?? "-"}\n` +
+      (size ? `Size: ${size}\n` : "") +
       `Quantity: ${qty}`;
     return `https://wa.me/${SHOP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
-  }, [product, qty]);
+  }, [product, qty, size]);
+
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 overflow-auto" onClick={onClose}>
@@ -242,7 +249,7 @@ function ProductDetailModal({ product, onClose }: { product: Product; onClose: (
         <div className="grid gap-4 p-4 md:grid-cols-2">
           <div className="aspect-square w-full overflow-hidden rounded bg-muted flex items-center justify-center">
             {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="h-full w-full object-contain" />
+              <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
             ) : (
               <ImageOff className="h-16 w-16 text-muted-foreground" />
             )}
@@ -251,7 +258,22 @@ function ProductDetailModal({ product, onClose }: { product: Product; onClose: (
             {product.brand && <div className="text-xs uppercase tracking-wide text-muted-foreground">{product.brand}</div>}
             <div><span className="text-muted-foreground">Code:</span> <span className="font-mono">{product.code}</span></div>
             {product.category && <div><span className="text-muted-foreground">Category:</span> {product.category}</div>}
-            {product.size && <div><span className="text-muted-foreground">Size:</span> {product.size}</div>}
+            {sizes.length > 0 && (
+              <div>
+                <div className="text-muted-foreground mb-1">Size{sizes.length > 1 ? " (choose one)" : ""}:</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {sizes.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSize(s)}
+                      className={`rounded-full border px-3 py-1 text-xs ${size === s ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {product.finish && <div><span className="text-muted-foreground">Finish:</span> {product.finish}</div>}
             {product.description && (
               <div className="pt-2">
