@@ -190,10 +190,6 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
   const [sending, setSending] = useState(false);
 
 
-  const priceStr = useMemo(
-    () => `${SHOP_CONFIG.currency}${Number(product.price).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`,
-    [product.price]
-  );
 
   const updateVariant = (i: number, patch: Partial<Variant>) => {
     setVariants((prev) => prev.map((v, idx) => (idx === i ? { ...v, ...patch } : v)));
@@ -269,7 +265,6 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
         <div className="text-sm font-medium leading-snug line-clamp-2 min-h-[2.5rem]">{product.name}</div>
         <div className="text-[11px] text-muted-foreground">Code: {product.code}</div>
       </div>
-      <div className="mt-2 text-lg font-bold text-price">{priceStr}</div>
 
       <div className="mt-2 space-y-2">
         {variants.map((v, i) => (

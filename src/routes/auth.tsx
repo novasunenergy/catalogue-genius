@@ -129,11 +129,14 @@ function AuthPage() {
       <div className="w-full max-w-sm rounded-lg bg-card border shadow-lg p-6">
         <div className="flex flex-col items-center gap-2 mb-4">
           <img src={logo} alt={SHOP_CONFIG.name} width={64} height={64} className="h-16 w-16" />
-          <h1 className="text-xl font-bold">{selectedRole === "admin" ? "Admin Login" : "Salesperson Login"}</h1>
+          <h1 className="text-xl font-bold">
+            {mode === "signup" ? "Create account" : search.role === "admin" ? "Admin Login" : search.role === "salesperson" ? "Salesperson Login" : "Team Login"}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {mode === "signup" ? `Create ${role === "admin" ? "admin" : "salesperson"} account` : SHOP_CONFIG.name}
           </p>
         </div>
+
         {existingSession && (
           <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
             You are signed in as <strong>{existingSession.email}</strong>
