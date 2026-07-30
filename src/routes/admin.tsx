@@ -354,7 +354,9 @@ function AdminPage() {
                     <td className="px-3 py-2">{p.name}</td>
                     <td className="px-3 py-2">{p.brand}</td>
                     <td className="px-3 py-2">{p.category}</td>
+                    <td className="px-3 py-2 text-xs">{p.size}</td>
                     <td className="px-3 py-2 text-right">{SHOP_CONFIG.currency}{Number(p.price).toLocaleString("en-IN")}</td>
+
                     <td className="px-3 py-2 text-right">
                       <button onClick={() => setEditing(p)} className="text-primary hover:underline mr-3">Edit</button>
                       <button onClick={() => deleteProduct(p.id)} className="text-destructive hover:underline"><Trash2 className="h-4 w-4 inline" /></button>
