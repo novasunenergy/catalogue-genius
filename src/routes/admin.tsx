@@ -541,15 +541,22 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
             </Field>
           </div>
           <Field label="Product Image">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               {form.image_url && <img src={form.image_url} alt="" className="h-14 w-14 rounded object-cover border" />}
-              <label className="flex-1 cursor-pointer rounded border border-dashed p-2 text-xs text-center hover:bg-muted">
-                {uploading ? "Uploading..." : "Click to upload image"}
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-              </label>
+              <div className="flex-1 grid grid-cols-2 gap-2">
+                <label className="cursor-pointer rounded border border-dashed p-2 text-xs text-center hover:bg-muted">
+                  {uploading ? "Uploading..." : "Choose picture"}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+                </label>
+                <label className="cursor-pointer rounded border border-dashed p-2 text-xs text-center hover:bg-muted">
+                  {uploading ? "Uploading..." : "Take picture"}
+                  <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+                </label>
+              </div>
               {form.image_url && <button onClick={() => set("image_url", "")} className="text-xs text-destructive">Remove</button>}
             </div>
           </Field>
+
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} />
             Active (visible to customers)
