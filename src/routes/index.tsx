@@ -203,24 +203,41 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
   );
 }
 
+type EnquiryLine = { size: string; finish: string; qty: number; unit: "Nos" | "Box" };
+
 function ProductDetailModal({ product, onClose }: { product: Product; onClose: () => void }) {
-  const [qty, setQty] = useState(1);
   const sizes = useMemo(
     () => (product.size ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     [product.size]
   );
-  const [size, setSize] = useState(sizes[0] ?? "");
+  const [lines, setLines] = useState<EnquiryLine[]>([
+    { size: sizes[0] ?? "", finish: product.finish ?? "", qty: 1, unit: "Nos" },
+  ]);
+
+  const update = (i: number, patch: Partial<EnquiryLine>) =>
+    setLines((prev) => prev.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
+  const addLine = () => setLines((prev) => [...prev, { size: "", finish: product.finish ?? "", qty: 1, unit: "Nos" }]);
+  const removeLine = (i: number) => setLines((prev) => prev.filter((_, idx) => idx !== i));
+
   const whatsappHref = useMemo(() => {
+    const details = lines
+      .filter((l) => l.qty > 0)
+      .map(
+        (l, i) =>
+          `${i + 1}) ` +
+          [l.size ? `Size: ${l.size}` : null, l.finish ? `Finish: ${l.finish}` : null, `Quantity: ${l.qty} ${l.unit}`]
+            .filter(Boolean)
+            .join(" | ")
+      )
+      .join("\n");
     const msg =
       `Hello, I would like to enquire about:\n\n` +
       `Product Code: ${product.code}\n` +
       `Product Name: ${product.name}\n` +
-      `Brand: ${product.brand ?? "-"}\n` +
-      (size ? `Size: ${size}\n` : "") +
-      `Quantity: ${qty}`;
+      `Brand: ${product.brand ?? "-"}\n\n` +
+      `${details}`;
     return `https://wa.me/${SHOP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
-  }, [product, qty, size]);
-
+  }, [product, lines]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 overflow-auto" onClick={onClose}>
@@ -241,34 +258,74 @@ function ProductDetailModal({ product, onClose }: { product: Product; onClose: (
             {product.brand && <div className="text-xs uppercase tracking-wide text-muted-foreground">{product.brand}</div>}
             <div><span className="text-muted-foreground">Code:</span> <span className="font-mono">{product.code}</span></div>
             {product.category && <div><span className="text-muted-foreground">Category:</span> {product.category}</div>}
-            {sizes.length > 0 && (
-              <div>
-                <div className="text-muted-foreground mb-1">Size{sizes.length > 1 ? " (choose one)" : ""}:</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {sizes.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSize(s)}
-                      className={`rounded-full border px-3 py-1 text-xs ${size === s ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {product.finish && <div><span className="text-muted-foreground">Finish:</span> {product.finish}</div>}
             {product.description && (
-              <div className="pt-2">
+              <div className="pt-1">
                 <div className="text-muted-foreground text-xs mb-1">Description</div>
                 <div className="whitespace-pre-wrap">{product.description}</div>
               </div>
             )}
-            <div className="pt-3 flex items-center gap-2">
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="rounded border p-1.5 hover:bg-muted"><Minus className="h-4 w-4" /></button>
-              <input type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} className="w-20 rounded border px-2 py-1.5 text-center" />
-              <button onClick={() => setQty((q) => q + 1)} className="rounded border p-1.5 hover:bg-muted"><Plus className="h-4 w-4" /></button>
+
+            <div className="space-y-2 pt-2">
+              <div className="text-xs font-medium text-muted-foreground">Choose size(s) &amp; quantity</div>
+              {lines.map((l, i) => (
+                <div key={i} className="rounded border p-2 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>Item {i + 1}</span>
+                    {lines.length > 1 && (
+                      <button onClick={() => removeLine(i)} className="text-destructive hover:underline">Remove</button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {sizes.length > 0 ? (
+                      <select
+                        value={l.size}
+                        onChange={(e) => update(i, { size: e.target.value })}
+                        className="rounded border px-2 py-1 text-sm"
+                      >
+                        <option value="">Select size</option>
+                        {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        value={l.size}
+                        onChange={(e) => update(i, { size: e.target.value })}
+                        placeholder="Size"
+                        className="rounded border px-2 py-1 text-sm"
+                      />
+                    )}
+                    <input
+                      value={l.finish}
+                      onChange={(e) => update(i, { finish: e.target.value })}
+                      placeholder="Finish"
+                      className="rounded border px-2 py-1 text-sm"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => update(i, { qty: Math.max(1, l.qty - 1) })} className="rounded border p-1 hover:bg-muted"><Minus className="h-3 w-3" /></button>
+                    <input
+                      type="number"
+                      min={1}
+                      value={l.qty}
+                      onChange={(e) => update(i, { qty: Math.max(1, Number(e.target.value) || 1) })}
+                      className="w-16 rounded border px-2 py-1 text-center text-sm"
+                    />
+                    <button onClick={() => update(i, { qty: l.qty + 1 })} className="rounded border p-1 hover:bg-muted"><Plus className="h-3 w-3" /></button>
+                    <select
+                      value={l.unit}
+                      onChange={(e) => update(i, { unit: e.target.value as "Nos" | "Box" })}
+                      className="rounded border px-2 py-1 text-sm"
+                    >
+                      <option value="Nos">Nos</option>
+                      <option value="Box">Box</option>
+                    </select>
+                  </div>
+                </div>
+              ))}
+              <button onClick={addLine} className="w-full rounded border border-dashed py-1 text-xs text-primary hover:bg-primary/5">
+                + Add another size / finish
+              </button>
             </div>
+
             <a
               href={whatsappHref}
               target="_blank"
