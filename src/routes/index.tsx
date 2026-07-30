@@ -222,15 +222,22 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
 
 function ProductDetailModal({ product, onClose }: { product: Product; onClose: () => void }) {
   const [qty, setQty] = useState(1);
+  const sizes = useMemo(
+    () => (product.size ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+    [product.size]
+  );
+  const [size, setSize] = useState(sizes[0] ?? "");
   const whatsappHref = useMemo(() => {
     const msg =
       `Hello, I would like to enquire about:\n\n` +
       `Product Code: ${product.code}\n` +
       `Product Name: ${product.name}\n` +
       `Brand: ${product.brand ?? "-"}\n` +
+      (size ? `Size: ${size}\n` : "") +
       `Quantity: ${qty}`;
     return `https://wa.me/${SHOP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
-  }, [product, qty]);
+  }, [product, qty, size]);
+
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 overflow-auto" onClick={onClose}>
