@@ -83,29 +83,12 @@ function CataloguePage() {
       <SiteHeader />
 
       <section className="border-b bg-card">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:px-4">
-          <div className="flex-1">
-            <h1 className="text-base font-bold text-foreground sm:text-lg">Mayur Hardware Product Catalogue</h1>
-            <p className="text-xs text-muted-foreground sm:text-sm">Customers can browse products below. Team members can sign in here.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
-            <Link
-              to="/auth"
-              search={{ role: "admin" }}
-              className="flex items-center justify-center gap-1.5 rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-            >
-              <ShieldCheck className="h-4 w-4" /> Admin Login
-            </Link>
-            <Link
-              to="/auth"
-              search={{ role: "salesperson" }}
-              className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
-            >
-              <ClipboardList className="h-4 w-4" /> Salesperson Login
-            </Link>
-          </div>
+        <div className="mx-auto max-w-7xl px-3 py-3 sm:px-4">
+          <h1 className="text-base font-bold text-foreground sm:text-lg">Mayur Hardware Product Catalogue</h1>
+          <p className="text-xs text-muted-foreground sm:text-sm">Browse our full range of hardware products and send your enquiry on WhatsApp.</p>
         </div>
       </section>
+
 
       {/* Search bar row */}
       <div className="bg-header-accent">
