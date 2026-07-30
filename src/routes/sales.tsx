@@ -281,12 +281,23 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
               )}
             </div>
             <div className="grid grid-cols-2 gap-1">
-              <input
-                value={v.size}
-                onChange={(e) => updateVariant(i, { size: e.target.value })}
-                placeholder="Size"
-                className="rounded border px-1.5 py-1 text-xs"
-              />
+              {sizes.length > 0 ? (
+                <select
+                  value={v.size}
+                  onChange={(e) => updateVariant(i, { size: e.target.value })}
+                  className="rounded border px-1.5 py-1 text-xs"
+                >
+                  <option value="">Size</option>
+                  {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              ) : (
+                <input
+                  value={v.size}
+                  onChange={(e) => updateVariant(i, { size: e.target.value })}
+                  placeholder="Size"
+                  className="rounded border px-1.5 py-1 text-xs"
+                />
+              )}
               <input
                 value={v.finish}
                 onChange={(e) => updateVariant(i, { finish: e.target.value })}
