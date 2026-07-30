@@ -574,6 +574,45 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
   );
 }
 
+function SizesInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const sizes = value.split(",").map((s) => s.trim()).filter(Boolean);
+  const [draft, setDraft] = useState("");
+
+  const commit = (list: string[]) => onChange(list.join(", "));
+  const add = () => {
+    const v = draft.trim();
+    if (!v) return;
+    if (!sizes.includes(v)) commit([...sizes, v]);
+    setDraft("");
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          placeholder="e.g. 200 MM"
+          className="input"
+        />
+        <button type="button" onClick={add} className="shrink-0 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">Add</button>
+      </div>
+      {sizes.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {sizes.map((s) => (
+            <span key={s} className="inline-flex items-center gap-1 rounded-full border bg-muted px-2 py-0.5 text-xs">
+              {s}
+              <button type="button" onClick={() => commit(sizes.filter((x) => x !== s))} className="text-destructive">×</button>
+            </span>
+          ))}
+        </div>
+      )}
+      <p className="text-[11px] text-muted-foreground">Add every size this product comes in — customers can pick one when enquiring.</p>
+    </div>
+  );
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
