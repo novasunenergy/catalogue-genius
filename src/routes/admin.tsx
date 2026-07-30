@@ -526,10 +526,10 @@ function ProductEditor({ initial, categories, brands, onClose, onSaved }: {
           </div>
           <Field label="Product Name *"><input value={form.name} onChange={(e) => set("name", e.target.value)} className="input" /></Field>
           <Field label="Description"><textarea rows={2} value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} className="input" /></Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Size"><input value={form.size ?? ""} onChange={(e) => set("size", e.target.value)} className="input" /></Field>
-            <Field label="Finish"><input value={form.finish ?? ""} onChange={(e) => set("finish", e.target.value)} className="input" /></Field>
-          </div>
+          <Field label="Sizes (add as many as you need)">
+            <SizesInput value={form.size ?? ""} onChange={(v) => set("size", v)} />
+          </Field>
+          <Field label="Finish"><input value={form.finish ?? ""} onChange={(e) => set("finish", e.target.value)} className="input" /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Category">
               <input list="cats" value={form.category ?? ""} onChange={(e) => set("category", e.target.value)} className="input" />
