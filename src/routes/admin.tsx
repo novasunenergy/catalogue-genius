@@ -338,7 +338,9 @@ function AdminPage() {
                   <th className="px-3 py-2 text-left">Name</th>
                   <th className="px-3 py-2 text-left">Brand</th>
                   <th className="px-3 py-2 text-left">Category</th>
+                  <th className="px-3 py-2 text-left">Size</th>
                   <th className="px-3 py-2 text-right">Price</th>
+
                   <th className="px-3 py-2"></th>
                 </tr>
               </thead>
