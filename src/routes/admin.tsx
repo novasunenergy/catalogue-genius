@@ -163,6 +163,8 @@ function AdminPage() {
   };
 
   const shopUrl = useMemo(() => {
+    const base = SHOP_CONFIG.publicUrl?.replace(/\/$/, "");
+    if (base) return `${base}/`;
     if (typeof window === "undefined") return "";
     return `${window.location.origin}/`;
   }, []);
