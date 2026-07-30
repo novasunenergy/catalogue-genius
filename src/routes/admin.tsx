@@ -287,25 +287,36 @@ function AdminPage() {
             </button>
           </Card>
 
-          <Card title="Add Category">
+          <Card title="Categories">
             <div className="flex gap-2">
               <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Door Handles" className="flex-1 rounded border px-2 py-1.5 text-sm" />
               <button onClick={addCategory} className="rounded bg-primary px-3 text-sm text-primary-foreground"><Plus className="h-4 w-4" /></button>
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
-              {categories.map((c) => <span key={c} className="rounded bg-secondary px-2 py-0.5 text-xs">{c}</span>)}
+              {categories.map((c) => (
+                <span key={c} className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs">
+                  {c}
+                  <button onClick={() => deleteCategory(c)} aria-label={`Remove category ${c}`} className="text-destructive hover:opacity-70"><Trash2 className="h-3 w-3" /></button>
+                </span>
+              ))}
             </div>
           </Card>
 
-          <Card title="Add Brand">
+          <Card title="Brands">
             <div className="flex gap-2">
               <input value={newBrand} onChange={(e) => setNewBrand(e.target.value)} placeholder="e.g. Godrej" className="flex-1 rounded border px-2 py-1.5 text-sm" />
               <button onClick={addBrand} className="rounded bg-primary px-3 text-sm text-primary-foreground"><Plus className="h-4 w-4" /></button>
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
-              {brands.map((b) => <span key={b} className="rounded bg-secondary px-2 py-0.5 text-xs">{b}</span>)}
+              {brands.map((b) => (
+                <span key={b} className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs">
+                  {b}
+                  <button onClick={() => deleteBrand(b)} aria-label={`Remove brand ${b}`} className="text-destructive hover:opacity-70"><Trash2 className="h-3 w-3" /></button>
+                </span>
+              ))}
             </div>
           </Card>
+
         </div>
 
         {/* Products */}
