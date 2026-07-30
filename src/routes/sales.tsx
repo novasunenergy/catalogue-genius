@@ -254,7 +254,7 @@ function OrderCard({ product, customerName, salespersonName }: { product: Produc
     <div className="flex flex-col rounded-md border bg-card p-2.5 shadow-sm hover:shadow-md transition-shadow">
       <div className="aspect-square w-full overflow-hidden rounded bg-muted flex items-center justify-center">
         {product.image_url ? (
-          <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-contain" />
+          <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <ImageOff className="h-10 w-10 text-muted-foreground" />
         )}
