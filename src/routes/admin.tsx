@@ -195,6 +195,16 @@ function AdminPage() {
     const { error } = await supabase.from("brands").insert({ name });
     if (error) toast.error(error.message); else { toast.success("Brand added"); setNewBrand(""); refresh(); }
   };
+  const deleteCategory = async (name: string) => {
+    if (!confirm(`Remove category "${name}"?`)) return;
+    const { error } = await supabase.from("categories").delete().eq("name", name);
+    if (error) toast.error(error.message); else { toast.success("Category removed"); refresh(); }
+  };
+  const deleteBrand = async (name: string) => {
+    if (!confirm(`Remove brand "${name}"?`)) return;
+    const { error } = await supabase.from("brands").delete().eq("name", name);
+    if (error) toast.error(error.message); else { toast.success("Brand removed"); refresh(); }
+  };
   const deleteProduct = async (id: string) => {
     if (!confirm("Delete this product?")) return;
     const { error } = await supabase.from("products").delete().eq("id", id);
