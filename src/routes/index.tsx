@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SHOP_CONFIG } from "@/lib/shop-config";
 import { normalizeProductImageUrls } from "@/lib/product-images";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Search, MessageCircle, Minus, Plus, ImageOff, ShieldCheck, ClipboardList, X } from "lucide-react";
+import { Search, MessageCircle, Minus, Plus, ImageOff, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
