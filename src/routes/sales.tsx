@@ -180,10 +180,15 @@ function SalesPage() {
 type Variant = { size: string; finish: string; qty: number; unit: "Nos" | "Box" };
 
 function OrderCard({ product, customerName, salespersonName }: { product: Product; customerName: string; salespersonName: string }) {
+  const sizes = useMemo(
+    () => (product.size ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+    [product.size]
+  );
   const [variants, setVariants] = useState<Variant[]>([
-    { size: product.size ?? "", finish: product.finish ?? "", qty: 1, unit: "Nos" },
+    { size: sizes[0] ?? "", finish: product.finish ?? "", qty: 1, unit: "Nos" },
   ]);
   const [sending, setSending] = useState(false);
+
 
   const priceStr = useMemo(
     () => `${SHOP_CONFIG.currency}${Number(product.price).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`,
