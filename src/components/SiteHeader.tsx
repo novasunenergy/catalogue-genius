@@ -53,15 +53,11 @@ export function SiteHeader() {
           </Link>
         )}
         {!signedIn && (
-          <Link to="/auth" search={{ role: "admin" }} className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm hover:bg-header-accent">
-            <ShieldCheck className="h-4 w-4" /> <span className="hidden sm:inline">Admin</span>
+          <Link to="/auth" search={{ role: undefined }} className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-white/70 hover:bg-header-accent hover:text-white">
+            <ShieldCheck className="h-3.5 w-3.5" /> Login
           </Link>
         )}
-        {!signedIn && (
-          <Link to="/auth" search={{ role: "salesperson" }} className="flex items-center gap-1.5 rounded-md bg-header-accent px-3 py-1.5 text-sm font-medium hover:bg-header-accent/80">
-            <ClipboardList className="h-4 w-4" /> <span className="hidden sm:inline">Salesperson</span>
-          </Link>
-        )}
+
       </div>
     </header>
   );
